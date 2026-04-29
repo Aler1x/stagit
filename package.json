@@ -1,7 +1,7 @@
 {
   "name": "stagit",
   "displayName": "Stagit",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "private": true,
   "description": "Git stash and worktree helpers for VS Code",
   "categories": [
@@ -60,6 +60,11 @@
         "command": "stagit.copyBranchName",
         "title": "Stagit: Copy Branch Name",
         "icon": "$(copy)"
+      },
+      {
+        "command": "stagit.pruneBranches",
+        "title": "Stagit: Prune Branches",
+        "icon": "$(trash)"
       },
       {
         "command": "stagit.applyStash",
@@ -168,6 +173,7 @@
   "activationEvents": [
     "onCommand:stagit.copyBranchName",
     "onCommand:stagit.openStashFile",
+    "onCommand:stagit.pruneBranches",
     "onStartupFinished"
   ],
   "icon": "media/icon.png",

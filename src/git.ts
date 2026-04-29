@@ -1,7 +1,8 @@
 import * as cp from "node:child_process";
 import * as path from "node:path";
 import * as vscode from "vscode";
-import type { Stash, StashFile, StashFileStatus, StashOperation } from "./stash/types";
+import { getStashArgs, parseStashFile } from "./stash/gitUtils";
+import type { Stash, StashFile, StashOperation } from "./stash/types";
 
 export class GitError extends Error {
   constructor(
@@ -52,6 +53,30 @@ export class GitService {
   async getCurrentBranch(repoPath: string): Promise<string | undefined> {
     const branch = (await this.git(repoPath, ["branch", "--show-current"])).trim();
     return branch || undefined;
+  }
+
+  async fetchPrune(repoPath: string): Promise<void> {
+    await this.git(repoPath, ["fetch", "--prune"]);
+  }
+
+  async listGoneBranches(repoPath: string): Promise<string[]> {
+    const output = await this.git(repoPath, [
+      "for-each-ref",
+      "refs/heads",
+      "--format=%(refname:short)%00%(upstream:track)",
+    ]);
+
+    return output
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .flatMap((line) => {
+        const [branch = "", upstreamTrack = ""] = line.split("\0");
+        return upstreamTrack === "[gone]" && branch ? [branch] : [];
+      });
+  }
+
+  async deleteBranch(repoPath: string, branch: string): Promise<void> {
+    await this.git(repoPath, ["branch", "-D", branch]);
   }
 
   async listStashes(repoPath: string): Promise<Stash[]> {
@@ -241,49 +266,5 @@ export class GitService {
 
       child.stdin.end(input);
     });
-  }
-}
-
-function getStashArgs(operation: StashOperation, message: string): string[] {
-  switch (operation) {
-    case "push":
-    case "snapshot":
-      return ["stash", "push", "--staged", "-m", message];
-    case "pushUnstaged":
-    case "snapshotUnstaged":
-      return ["stash", "push", "--keep-index", "--include-untracked", "-m", message];
-  }
-}
-
-function parseStashFile(repoPath: string, stashRef: string, line: string): StashFile {
-  const parts = line.split("\t");
-  const rawStatus = parts[0] ?? "";
-  const status = parseStatus(rawStatus);
-  const oldPath = status === "renamed" || status === "copied" ? parts[1] : undefined;
-  const filePath = status === "renamed" || status === "copied" ? parts[2] : parts[1];
-
-  return {
-    repoPath,
-    stashRef,
-    path: filePath ?? "",
-    oldPath,
-    status,
-  };
-}
-
-function parseStatus(status: string): StashFileStatus {
-  switch (status[0]) {
-    case "A":
-      return "added";
-    case "M":
-      return "modified";
-    case "D":
-      return "deleted";
-    case "R":
-      return "renamed";
-    case "C":
-      return "copied";
-    default:
-      return "unknown";
   }
 }
