@@ -27,13 +27,13 @@ export class GitService {
     }
     const repositories = api?.repositories as { rootUri: vscode.Uri }[] | undefined;
     const repoPaths = repositories?.map((r) => r.rootUri.fsPath) ?? [];
-    if (repoPaths.length !== 0) return [...new Set(repoPaths)];
+    if (repoPaths.length !== 0) return this.dedupeRepositories(repoPaths);
 
     const folders = vscode.workspace.workspaceFolders ?? [];
     const discovered = await Promise.all(
       folders.map((folder) => this.findRepoRoot(folder.uri.fsPath)),
     );
-    return [...new Set(discovered.filter((repo): repo is string => repo !== undefined))];
+    return this.dedupeRepositories(discovered.filter((repo): repo is string => repo !== undefined));
   }
 
   async getBestRepository(): Promise<string | undefined> {
@@ -134,6 +134,46 @@ export class GitService {
   private async findRepoRoot(cwd: string): Promise<string | undefined> {
     try {
       return (await this.git(cwd, ["rev-parse", "--show-toplevel"])).trim();
+    } catch {
+      return undefined;
+    }
+  }
+
+  private async dedupeRepositories(repoPaths: string[]): Promise<string[]> {
+    const repos = new Map<string, { path: string; isWorktree: boolean }>();
+    const uniqueRepoPaths = [...new Set(repoPaths)];
+    const repoGitDirs = await Promise.all(
+      uniqueRepoPaths.map(async (repoPath) => ({ repoPath, gitDirs: await this.getGitDirs(repoPath) })),
+    );
+
+    for (const { repoPath, gitDirs } of repoGitDirs) {
+      const key = gitDirs?.commonDir ?? repoPath;
+      const isWorktree = gitDirs?.gitDir !== gitDirs?.commonDir;
+      const existing = repos.get(key);
+      if (existing === undefined || (existing.isWorktree && !isWorktree)) {
+        repos.set(key, { path: repoPath, isWorktree });
+      }
+    }
+    return [...repos.values()].map((repo) => repo.path);
+  }
+
+  private async getGitDirs(
+    repoPath: string,
+  ): Promise<{ commonDir: string; gitDir: string } | undefined> {
+    try {
+      const output = await this.git(repoPath, [
+        "rev-parse",
+        "--path-format=absolute",
+        "--git-dir",
+        "--git-common-dir",
+      ]);
+      const [gitDir, commonDir] = output.split(/\r?\n/);
+      if (gitDir === undefined || commonDir === undefined) return undefined;
+
+      return {
+        commonDir: path.normalize(commonDir.trim()),
+        gitDir: path.normalize(gitDir.trim()),
+      };
     } catch {
       return undefined;
     }
