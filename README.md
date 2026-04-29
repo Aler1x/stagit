@@ -33,6 +33,8 @@ bunx @vscode/vsce package
 
 You can also install `vsce` globally and run `vsce package`.
 
+GitHub Actions also builds and uploads `stagit.vsix` to a GitHub Release when you push a `v*` tag, or when you run the **Release** workflow manually with a tag name.
+
 ## Install Locally
 
 Install the generated `.vsix` into VS Code with:
