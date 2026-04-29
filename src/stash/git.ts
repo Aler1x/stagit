@@ -143,7 +143,10 @@ export class GitService {
     const repos = new Map<string, { path: string; isWorktree: boolean }>();
     const uniqueRepoPaths = [...new Set(repoPaths)];
     const repoGitDirs = await Promise.all(
-      uniqueRepoPaths.map(async (repoPath) => ({ repoPath, gitDirs: await this.getGitDirs(repoPath) })),
+      uniqueRepoPaths.map(async (repoPath) => ({
+        repoPath,
+        gitDirs: await this.getGitDirs(repoPath),
+      })),
     );
 
     for (const { repoPath, gitDirs } of repoGitDirs) {
