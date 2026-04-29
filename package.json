@@ -1,7 +1,7 @@
 {
   "name": "stagit",
   "displayName": "Stagit",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "private": true,
   "description": "Git stash and worktree helpers for VS Code",
   "categories": [
