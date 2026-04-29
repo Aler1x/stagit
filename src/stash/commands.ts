@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import * as vscode from "vscode";
-import type { GitError, GitService } from "./git";
+import type { GitError, GitService } from "../git";
 import type { StashContentProvider } from "./contentProvider";
 import type { StashTreeProvider } from "./tree";
 import type { FileNode, Stash, StashFile, StashNode, StashOperation } from "./types";

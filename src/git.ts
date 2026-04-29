@@ -1,7 +1,7 @@
 import * as cp from "node:child_process";
 import * as path from "node:path";
 import * as vscode from "vscode";
-import type { Stash, StashFile, StashFileStatus, StashOperation } from "./types";
+import type { Stash, StashFile, StashFileStatus, StashOperation } from "./stash/types";
 
 export class GitError extends Error {
   constructor(
@@ -47,6 +47,11 @@ export class GitService {
     }
 
     return (await this.getRepositories())[0];
+  }
+
+  async getCurrentBranch(repoPath: string): Promise<string | undefined> {
+    const branch = (await this.git(repoPath, ["branch", "--show-current"])).trim();
+    return branch || undefined;
   }
 
   async listStashes(repoPath: string): Promise<Stash[]> {

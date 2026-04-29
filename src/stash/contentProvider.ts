@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { GitService } from "./git";
+import type { GitService } from "../git";
 import type { StashFile } from "./types";
 
 export class StashContentProvider implements vscode.TextDocumentContentProvider {

@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import * as vscode from "vscode";
-import type { GitService } from "./git";
+import type { GitService } from "../git";
 import type {
   FileNode,
   FolderNode,
