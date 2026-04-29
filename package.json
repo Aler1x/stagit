@@ -1,7 +1,7 @@
 {
   "name": "stagit",
   "displayName": "Stagit",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "private": true,
   "description": "Git stash and worktree helpers for VS Code",
   "categories": [
@@ -138,19 +138,24 @@
           "group": "inline@0"
         },
         {
-          "command": "stagit.applyStash",
+          "command": "stagit.previewStash",
           "when": "view == stagit.stashes && viewItem == stash",
           "group": "stash@0"
         },
         {
-          "command": "stagit.popStash",
+          "command": "stagit.applyStash",
           "when": "view == stagit.stashes && viewItem == stash",
           "group": "stash@1"
         },
         {
-          "command": "stagit.dropStash",
+          "command": "stagit.popStash",
           "when": "view == stagit.stashes && viewItem == stash",
           "group": "stash@2"
+        },
+        {
+          "command": "stagit.dropStash",
+          "when": "view == stagit.stashes && viewItem == stash",
+          "group": "stash@3"
         },
         {
           "command": "stagit.openStashFile",

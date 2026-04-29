@@ -71,10 +71,6 @@ export class StashCommands {
     if (stash === undefined) return;
 
     await this.run(async () => {
-      const choice = await pickStashAction(stash, "Apply");
-      if (choice === "Preview") return this.preview(node);
-      if (choice !== "Apply") return;
-
       await this.git.applyStash(stash);
       this.tree.refresh();
     });
@@ -85,10 +81,6 @@ export class StashCommands {
     if (stash === undefined) return;
 
     await this.run(async () => {
-      const choice = await pickStashAction(stash, "Pop");
-      if (choice === "Preview") return this.preview(node);
-      if (choice !== "Pop") return;
-
       await this.git.popStash(stash);
       this.tree.refresh();
     });
@@ -231,16 +223,6 @@ async function pickOperation(
   return (
     await vscode.window.showQuickPick(sorted, { title: "Stagit", placeHolder: "Choose stash type" })
   )?.operation;
-}
-
-async function pickStashAction(
-  stash: Stash,
-  action: "Apply" | "Pop",
-): Promise<"Apply" | "Pop" | "Preview" | undefined> {
-  return (await vscode.window.showQuickPick([action, "Preview", "Later"], {
-    title: `${action} ${stash.ref}`,
-    placeHolder: stash.message || stash.ref,
-  })) as "Apply" | "Pop" | "Preview" | undefined;
 }
 
 function getStash(node: unknown): Stash | undefined {
