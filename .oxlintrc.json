@@ -1,14 +1,29 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "typescript",
-    "unicorn",
-    "oxc"
-  ],
+  "plugins": ["typescript"],
   "categories": {
-    "correctness": "error"
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "warn",
+    "pedantic": "warn",
+    "style": "off"
   },
-  "rules": {},
+  "rules": {
+    "no-console": "error",
+    "no-debugger": "error",
+    "no-duplicate-imports": "error",
+    "no-empty-function": "error",
+    "no-fallthrough": "error",
+    "no-array-sort": "warn",
+    "no-magic-numbers": "off",
+    "no-process-exit": "error",
+    "no-unused-vars": "error",
+    "typescript/consistent-type-imports": "error",
+    "unicorn/prefer-node-protocol": "error",
+    "max-classes-per-file": "off",
+    "no-ternary": "off"
+  },
+  "ignorePatterns": ["out/**", "node_modules/**"],
   "env": {
     "builtin": true
   }

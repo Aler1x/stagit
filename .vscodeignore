@@ -5,4 +5,6 @@ tsconfig.json
 .gitignore
 **/*.map
 bun.lock
-vscode**
+node_modules/**
+.oxlintrc.json
+.oxfmtrc.json

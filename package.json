@@ -1,19 +1,22 @@
 {
   "name": "stagit",
   "displayName": "Stagit",
-  "description": "Git stash and worktree helpers for VS Code",
-  "version": "0.0.1",
-  "publisher": "stagit",
+  "version": "0.0.5",
   "private": true,
-  "engines": {
-    "vscode": "^1.85.0"
-  },
+  "description": "Git stash and worktree helpers for VS Code",
   "categories": [
     "SCM Providers"
   ],
-  "activationEvents": [
-    "onStartupFinished"
-  ],
+  "license": "MIT",
+  "author": {
+    "name": "aler1x",
+    "url": "https://github.com/aler1x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aler1x/stagit.git"
+  },
+  "publisher": "Aler1x",
   "main": "./out/extension.js",
   "scripts": {
     "vscode:prepublish": "bun run compile",
@@ -30,5 +33,139 @@
     "oxfmt": "^0.47.0",
     "oxlint": "^1.62.0",
     "typescript": "^5.6.0"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "stagit.stash",
+        "title": "Stagit: Stash...",
+        "icon": "$(archive)"
+      },
+      {
+        "command": "stagit.stashStaged",
+        "title": "Stagit: Stash Staged...",
+        "icon": "$(archive)"
+      },
+      {
+        "command": "stagit.stashUnstaged",
+        "title": "Stagit: Stash Unstaged...",
+        "icon": "$(archive)"
+      },
+      {
+        "command": "stagit.refreshStashes",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "stagit.applyStash",
+        "title": "Apply Stash",
+        "icon": "$(git-pull-request-go-to-changes)"
+      },
+      {
+        "command": "stagit.popStash",
+        "title": "Pop Stash",
+        "icon": "$(git-pull-request-go-to-changes)"
+      },
+      {
+        "command": "stagit.dropStash",
+        "title": "Drop Stash",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "stagit.previewStash",
+        "title": "Preview Stash",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "stagit.openStashFile",
+        "title": "Open Stash File Changes",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "stagit.applyStashFileChanges",
+        "title": "Apply Changes",
+        "icon": "$(git-pull-request-go-to-changes)"
+      },
+      {
+        "command": "stagit.restoreStashFileChanges",
+        "title": "Restore Changes (Checkout)",
+        "icon": "$(discard)"
+      }
+    ],
+    "views": {
+      "scm": [
+        {
+          "id": "stagit.stashes",
+          "name": "Stashes",
+          "when": "workspaceFolderCount != 0"
+        }
+      ]
+    },
+    "menus": {
+      "scm/resourceGroup/context": [
+        {
+          "command": "stagit.stashStaged",
+          "when": "scmProvider == git && scmResourceGroup == index",
+          "group": "inline@-1"
+        },
+        {
+          "command": "stagit.stashUnstaged",
+          "when": "scmProvider == git && scmResourceGroup == workingTree",
+          "group": "inline@-1"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "stagit.refreshStashes",
+          "when": "view == stagit.stashes",
+          "group": "navigation@1"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "stagit.previewStash",
+          "when": "view == stagit.stashes && viewItem == stash",
+          "group": "inline@0"
+        },
+        {
+          "command": "stagit.applyStash",
+          "when": "view == stagit.stashes && viewItem == stash",
+          "group": "stash@0"
+        },
+        {
+          "command": "stagit.popStash",
+          "when": "view == stagit.stashes && viewItem == stash",
+          "group": "stash@1"
+        },
+        {
+          "command": "stagit.dropStash",
+          "when": "view == stagit.stashes && viewItem == stash",
+          "group": "stash@2"
+        },
+        {
+          "command": "stagit.openStashFile",
+          "when": "view == stagit.stashes && viewItem == stashFile",
+          "group": "inline@0"
+        },
+        {
+          "command": "stagit.applyStashFileChanges",
+          "when": "view == stagit.stashes && viewItem == stashFile",
+          "group": "file@0"
+        },
+        {
+          "command": "stagit.restoreStashFileChanges",
+          "when": "view == stagit.stashes && viewItem == stashFile",
+          "group": "file@1"
+        }
+      ]
+    }
+  },
+  "activationEvents": [
+    "onCommand:stagit.openStashFile",
+    "onStartupFinished"
+  ],
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
   }
 }

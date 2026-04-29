@@ -1,15 +1,44 @@
 # Stagit
 
-VS Code extension scaffold: **Stashes** and **Worktrees** tree views in the Source Control sidebar (same area as Changes / repository sections).
+VS Code extension for lightweight Git stash workflows in the Source Control sidebar.
 
 ## Develop
 
-1. Install dependencies (`bun install` or `npm install`).
-2. Run `bun run compile` or `npm run compile` once so `out/` exists.
-3. In VS Code, open this folder and use **Run Extension** from the Run and Debug view (`F5`).
+1. Install dependencies with `bun install`.
+2. Run `bun run compile` once so `out/` exists.
+3. Open this folder in VS Code.
+4. Start the extension host with **Run Extension** from the Run and Debug view, or press `F5`.
 
-The new views appear when you open the **Source Control** activity; scroll the sidebar to find **Stashes** and **Worktrees**.
+The **Stashes** view appears in the Source Control activity. Inline stash buttons also appear on the built-in Git **Staged Changes** and **Changes** group headers.
+
+## Check
+
+Run these before packaging:
+
+```sh
+bun run compile
+bun run fmt:check
+bun run lint
+```
+
+Use `bun run fmt` to apply formatter changes.
 
 ## Package
 
-`vsce package` (after a successful compile) produces a `.vsix`. Set `publisher` in `package.json` before publishing.
+Build a local `.vsix` package with:
+
+```sh
+bunx @vscode/vsce package
+```
+
+You can also install `vsce` globally and run `vsce package`.
+
+## Install Locally
+
+Install the generated `.vsix` into VS Code with:
+
+```sh
+code --install-extension stagit-0.0.1.vsix
+```
+
+Reload VS Code after installing if the extension does not appear immediately.
