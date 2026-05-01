@@ -4,6 +4,12 @@ import * as vscode from "vscode";
 import { getStashArgs, parseStashFile } from "./stash/gitUtils";
 import type { Stash, StashFile, StashOperation } from "./stash/types";
 
+type GitRepository = {
+  rootUri: vscode.Uri;
+  fetch(options?: { prune?: boolean }): Promise<void>;
+};
+type GitExtensionApi = { repositories: GitRepository[] };
+
 export class GitError extends Error {
   constructor(
     message: string,
@@ -18,15 +24,7 @@ export class GitService {
   constructor(private readonly output: vscode.OutputChannel) {}
 
   async getRepositories(): Promise<string[]> {
-    const gitExtension = vscode.extensions.getExtension("vscode.git");
-    let api: { repositories: { rootUri: vscode.Uri }[] } | undefined;
-    try {
-      const git = await gitExtension?.activate();
-      api = git?.getAPI?.(1) as { repositories: { rootUri: vscode.Uri }[] } | undefined;
-    } catch {
-      api = undefined;
-    }
-    const repositories = api?.repositories as { rootUri: vscode.Uri }[] | undefined;
+    const repositories = (await this.getGitExtensionApi())?.repositories;
     const repoPaths = repositories?.map((r) => r.rootUri.fsPath) ?? [];
     if (repoPaths.length !== 0) return this.dedupeRepositories(repoPaths);
 
@@ -56,6 +54,12 @@ export class GitService {
   }
 
   async fetchPrune(repoPath: string): Promise<void> {
+    const repository = await this.getGitRepository(repoPath);
+    if (repository !== undefined) {
+      await repository.fetch({ prune: true });
+      return;
+    }
+
     await this.git(repoPath, ["fetch", "--prune"]);
   }
 
@@ -63,20 +67,26 @@ export class GitService {
     const output = await this.git(repoPath, [
       "for-each-ref",
       "refs/heads",
-      "--format=%(refname:short)%00%(upstream:track)",
+      "--format=%(refname:short)%00%(upstream:track)%00%(HEAD)%00%(worktreepath)",
     ]);
 
     return output
       .split(/\r?\n/)
       .filter(Boolean)
       .flatMap((line) => {
-        const [branch = "", upstreamTrack = ""] = line.split("\0");
-        return upstreamTrack === "[gone]" && branch ? [branch] : [];
+        const [branch = "", upstreamTrack = "", head = "", worktreePath = ""] = line.split("\0");
+        return upstreamTrack === "[gone]" && branch && head !== "*" && !worktreePath
+          ? [branch]
+          : [];
       });
   }
 
-  async deleteBranch(repoPath: string, branch: string): Promise<void> {
-    await this.git(repoPath, ["branch", "-D", branch]);
+  async deleteBranch(
+    repoPath: string,
+    branch: string,
+    options?: { force?: boolean },
+  ): Promise<void> {
+    await this.git(repoPath, ["branch", options?.force === true ? "-D" : "-d", branch]);
   }
 
   async listStashes(repoPath: string): Promise<Stash[]> {
@@ -207,6 +217,24 @@ export class GitService {
         commonDir: path.normalize(commonDir.trim()),
         gitDir: path.normalize(gitDir.trim()),
       };
+    } catch {
+      return undefined;
+    }
+  }
+
+  private async getGitRepository(repoPath: string): Promise<GitRepository | undefined> {
+    const api = await this.getGitExtensionApi();
+    const normalizedRepoPath = path.normalize(repoPath).toLowerCase();
+    return api?.repositories.find(
+      (repo) => path.normalize(repo.rootUri.fsPath).toLowerCase() === normalizedRepoPath,
+    );
+  }
+
+  private async getGitExtensionApi(): Promise<GitExtensionApi | undefined> {
+    const gitExtension = vscode.extensions.getExtension("vscode.git");
+    try {
+      const git = await gitExtension?.activate();
+      return (git as { getAPI?(version: 1): GitExtensionApi | undefined } | undefined)?.getAPI?.(1);
     } catch {
       return undefined;
     }
